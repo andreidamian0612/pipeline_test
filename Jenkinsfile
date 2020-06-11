@@ -12,14 +12,14 @@ pipeline {
       parallel {
         stage('Linux Tests') {
           steps {
-            echo 'Run Linux Tests'
+            echo 'Run Linux tests'
             sh 'sh run_linux_tests.sh'
           }
         }
 
         stage('Windows Tests') {
           steps {
-            echo 'Run Windows Tests'
+            echo 'Run Windows tests'
           }
         }
 
@@ -29,11 +29,21 @@ pipeline {
     stage('Deploy Staging') {
       steps {
         echo 'Deploy to staging environment'
-        input 'Ok to deploy to production'
+        input 'Ok to deploy to production?'
       }
     }
 
     stage('Deploy Production') {
+      post {
+        always {
+          archiveArtifacts(artifacts: 'target/demoapp.jar', fingerprint: true)
+        }
+
+        failure {
+          emailext(subject: 'Demoapp build failure', to: 'dhgautam@yahoo.com', body: 'Build failure for demoapp Build ${env.JOB_NAME} ')
+        }
+
+      }
       steps {
         echo 'Deploy to Prod'
       }
